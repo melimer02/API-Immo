@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?manquant — copiez .env.example vers .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?manquant — copiez .env.example vers .env}
+      POSTGRES_DB: ${POSTGRES_DB:?manquant — copiez .env.example vers .env}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      retries: 10
+
+  db-test:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?manquant — copiez .env.example vers .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?manquant — copiez .env.example vers .env}
+      POSTGRES_DB: ${POSTGRES_TEST_DB:?manquant — copiez .env.example vers .env}
+    ports:
+      - "${POSTGRES_TEST_PORT:-5434}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:
