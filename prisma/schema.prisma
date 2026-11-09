@@ -1,0 +1,140 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  AGENT
+  ADMIN
+}
+
+enum StatutPro {
+  AUCUN
+  EN_ATTENTE
+  VALIDE
+  REFUSE
+}
+
+enum TypeBien {
+  VENTE
+  LOCATION
+}
+
+enum StatutPublication {
+  BROUILLON
+  PUBLIEE
+}
+
+enum StatutBien {
+  DISPONIBLE
+  LOUE
+  VENDU
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(USER)
+  statutPro    StatutPro @default(AUCUN)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  annonces  Annonce[]  // annonces créées (agent)
+  questions Question[] // questions posées
+  reponses  Reponse[]  // réponses données (agent)
+  favoris   Favori[]
+
+  @@index([role, statutPro])
+  @@map("user")
+}
+
+model Annonce {
+  id                Int               @id @default(autoincrement())
+  titre             String
+  description       String
+  typeBien          TypeBien
+  statutPublication StatutPublication @default(BROUILLON)
+  statutBien        StatutBien        @default(DISPONIBLE)
+  prix              Float
+  surface           Int?
+  ville             String
+  dateDisponibilite DateTime
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  auteur   User   @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+  auteurId String
+
+  photos    Photo[]
+  questions Question[]
+  favoris   Favori[]
+
+  @@index([statutPublication, createdAt])
+  @@index([auteurId])
+  @@index([ville])
+}
+
+model Photo {
+  id        Int      @id @default(autoincrement())
+  url       String
+  alt       String
+  createdAt DateTime @default(now())
+
+  annonce   Annonce @relation(fields: [annonceId], references: [id], onDelete: Cascade)
+  annonceId Int
+
+  @@index([annonceId])
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  contenu   String
+  createdAt DateTime @default(now())
+
+  annonce   Annonce @relation(fields: [annonceId], references: [id], onDelete: Cascade)
+  annonceId Int
+
+  auteur   User   @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+  auteurId String
+
+  reponse Reponse?
+
+  @@index([annonceId])
+  @@index([auteurId])
+}
+
+model Reponse {
+  id        Int      @id @default(autoincrement())
+  contenu   String
+  createdAt DateTime @default(now())
+
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId Int      @unique // une seule réponse par question
+
+  auteur   User   @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+  auteurId String
+
+  @@index([auteurId])
+}
+
+model Favori {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  annonce   Annonce @relation(fields: [annonceId], references: [id], onDelete: Cascade)
+  annonceId Int
+
+  @@unique([userId, annonceId])
+}
