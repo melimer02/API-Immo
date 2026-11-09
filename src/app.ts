@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+
 import {
   serializerCompiler,
   validatorCompiler,
