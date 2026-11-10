@@ -84,7 +84,7 @@ export const AuteurPublic = z
 export const erreurs = {
   400: ErreurSchema.describe("Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST"),
   401: ErreurSchema.describe("Jeton absent, invalide ou expiré — UNAUTHENTICATED"),
-  403: ErreurSchema.describe("Le rôle ne permet pas l'opération — FORBIDDEN"),
+  403: ErreurSchema.describe("Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN"),
   404: ErreurSchema.describe(
     "Ressource inexistante OU appartenant à un autre utilisateur (indiscernables volontairement) — NOT_FOUND",
   ),

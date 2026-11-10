@@ -1,11 +1,13 @@
 /* Politique d'autorisation  */
 
 export type Role = "USER" | "AGENT" | "ADMIN";
-export type Utilisateur = { id: string; role: Role };
+export type StatutPro = "AUCUN" | "EN_ATTENTE" | "VALIDE" | "REFUSE";
+export type Utilisateur = { id: string; role: Role; statutPro: StatutPro };
 
 /** Peut créer et gérer des annonces */
 export function peutGererAnnonces(user: Utilisateur): boolean {
-  return user.role === "AGENT" || user.role === "ADMIN";
+  if (user.role === "ADMIN") return true;
+  return user.role === "AGENT" && user.statutPro === "VALIDE";
 }
 
 /**
