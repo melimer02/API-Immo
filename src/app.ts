@@ -3,27 +3,27 @@ import fastifyJwt from "@fastify/jwt";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import {
-  serializerCompiler,
   jsonSchemaTransform,
+  serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import { prisma } from "./lib/prisma.js";
 import { enregistrerGestionErreurs } from "./lib/errors.js";
+import { transformerSpec } from "./lib/openapi.js";
 import { authRoutes } from "./routes/auth.js";
 import { annoncesRoutes } from "./routes/annonces.js";
 import { questionsRoutes } from "./routes/questions.js";
 
-
-//une instance de l'appli 
-export  async function buildApp() {
+export async function buildApp() {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error("JWT_SECRET manquant ou trop court (32 caractères minimum)");
   }
+
   const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
 
-  // Zod valide les entrées et sérialise les sorties
+  // Zod valide les entrées et sérialise les sorties (les champs hors schéma sont retirés)
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
@@ -41,19 +41,46 @@ export  async function buildApp() {
   // Documentation OpenAPI générée depuis les schémas Zod (code-first)
   await app.register(fastifySwagger, {
     openapi: {
-      info: { title: "ImmoService API", version: "1.0.0" },
+      openapi: "3.1.0",
+      info: {
+        title: "ImmoService API",
+        version: "1.0.0",
+        license: {
+          name: "Projet pédagogique — M2 IWOCS, Université Le Havre Normandie",
+          url: "https://www-apps.univ-lehavre.fr/forge/ai223266/webservices_immoservice",
+        },
+        description: [
+          "API REST du domaine immobilier : annonces, questions/réponses, comptes.",
+          "",
+          "- **Lecture publique** : les annonces publiées sont accessibles sans authentification.",
+          "- **Écriture protégée** : JWT obligatoire (`Authorization: Bearer <jeton>`), obtenu via `POST /auth/login`.",
+          "- **Erreurs** : toujours de la forme `{ error: { code, message, details } }`, avec un `code` stable.",
+          "- **404 plutôt que 403** sur une ressource d'un autre utilisateur : on ne révèle pas son existence.",
+        ].join("\n"),
+      },
+      servers: [{ url: "http://localhost:3000", description: "Développement" }],
+      tags: [
+        { name: "auth", description: "Inscription, connexion (JWT) et profil" },
+        { name: "annonces", description: "Consultation publique et gestion des annonces par les agents" },
+        { name: "questions", description: "Questions des utilisateurs et réponses des agents propriétaires" },
+      ],
       components: {
         securitySchemes: {
-          bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+            description: "Jeton obtenu via POST /auth/login",
+          },
         },
       },
     },
     transform: jsonSchemaTransform,
+    // Publie les schémas nommés (.meta({ id })) dans components/schemas et les référence par $ref
+    transformObject: transformerSpec,
   });
   await app.register(fastifySwaggerUi, { routePrefix: "/docs" });
 
-
-  //verification de la connexion entre l'api et la base .
   app.get("/health", { schema: { hide: true } }, async () => {
     await prisma.$queryRaw`SELECT 1`;
     return { status: "ok" };
