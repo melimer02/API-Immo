@@ -10,7 +10,7 @@ import {
 } from "../lib/auth.js";
 import { filtreProprietaire, filtreVisibilite } from "../regles/autorisation.js";
 import { Prisma } from "../generated/prisma/client.js";
-import { erreurs, IdParams, PaginationQuery } from "../schemas/commun.js";
+import { erreurs, IdParams, PaginationQuery, securite, securiteFacultative } from "../schemas/commun.js";
 import {
   PageQuestionsSchema,
   QuestionBody,
@@ -32,8 +32,6 @@ const selectQuestion = {
   reponse: { select: selectReponse },
 } satisfies Prisma.QuestionSelect;
 
-const securite = [{ bearerAuth: [] }];
-
 export const questionsRoutes: FastifyPluginAsyncZod = async (app) => {
   // ── GET /annonces/:id/questions : questions d'une annonce visible ──
   app.get("/annonces/:id/questions", {
@@ -41,6 +39,8 @@ export const questionsRoutes: FastifyPluginAsyncZod = async (app) => {
     schema: {
       tags: ["questions"],
       summary: "Questions posées sur une annonce (avec leur réponse)",
+      operationId: "listerQuestions",
+      security: securiteFacultative,
       params: IdParams,
       querystring: PaginationQuery,
       response: { 200: PageQuestionsSchema, 400: erreurs[400], 401: erreurs[401], 404: erreurs[404] },
@@ -66,12 +66,14 @@ export const questionsRoutes: FastifyPluginAsyncZod = async (app) => {
     return { data, meta: meta(page, limit, total) };
   });
 
-  //  GET /questions/:id : une question 
+  // ── GET /questions/:id : une question (si son annonce est visible) ──
   app.get("/questions/:id", {
     onRequest: [authentifierSiPresent],
     schema: {
       tags: ["questions"],
       summary: "Détail d'une question",
+      operationId: "lireQuestion",
+      security: securiteFacultative,
       params: IdParams,
       response: { 200: QuestionSchema, 400: erreurs[400], 401: erreurs[401], 404: erreurs[404] },
     },
@@ -90,6 +92,8 @@ export const questionsRoutes: FastifyPluginAsyncZod = async (app) => {
     schema: {
       tags: ["questions"],
       summary: "Poser une question sur une annonce publiée",
+      operationId: "poserQuestion",
+      description: "Tout utilisateur connecté. 404 si l'annonce n'existe pas ou n'est pas publiée. 201 avec Location: /questions/{id}.",
       security: securite,
       params: IdParams,
       body: QuestionBody,
@@ -115,6 +119,9 @@ export const questionsRoutes: FastifyPluginAsyncZod = async (app) => {
     schema: {
       tags: ["questions"],
       summary: "Répondre à une question posée sur une de mes annonces",
+      operationId: "repondreQuestion",
+      description:
+        "Agent propriétaire de l'annonce (ou ADMIN). 404 si la question porte sur l'annonce d'un autre agent, 409 si elle a déjà une réponse.",
       security: securite,
       params: IdParams,
       body: ReponseBody,
@@ -127,7 +134,7 @@ export const questionsRoutes: FastifyPluginAsyncZod = async (app) => {
       where: { id: req.params.id, annonce: filtreProprietaire(user) },
       select: { id: true, reponse: { select: { id: true } } },
     });
-    if (!question) throw introuvable("Question"); 
+    if (!question) throw introuvable("Question"); // inexistante OU pas sur mon annonce
 
     const dejaRepondue = () =>
       new AppError(409, "QUESTION_ALREADY_ANSWERED", "Cette question a déjà une réponse");

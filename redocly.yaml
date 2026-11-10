@@ -1,0 +1,6 @@
+# Configuration du linter de spécification OpenAPI (npm run openapi:lint)
+extends:
+  - recommended
+rules:
+  # Serveur localhost assumé : l'API n'est pas déployée, seul l'environnement de développement existe
+  no-server-example.com: off
