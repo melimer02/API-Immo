@@ -1,12 +1,12 @@
 import type { FastifyRequest } from "fastify";
 import { interdit, nonAuthentifie } from "./errors.js";
-import { peutGererAnnonces, type Role, type Utilisateur } from "../regles/autorisation.js";
+import { peutGererAnnonces, type Role, type Utilisateur , type StatutPro} from "../regles/autorisation.js";
 import "@fastify/jwt"
 
 // Contenu du JWT : identifiant  et rôle. 
 declare module "@fastify/jwt" {
   interface FastifyJWT {
-    payload: { sub: string; role: Role };
+    payload: { sub: string; role: Role, statutPro: StatutPro };
     user: Utilisateur;
   }
 }

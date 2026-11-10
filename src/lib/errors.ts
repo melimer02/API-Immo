@@ -39,7 +39,7 @@ export class AppError extends Error {
 export const nonAuthentifie = () =>
   new AppError(401, "UNAUTHENTICATED", "Authentification requise : jeton absent, invalide ou expiré");
 export const interdit = () =>
-  new AppError(403, "FORBIDDEN", "Votre rôle ne permet pas cette opération");
+  new AppError(403, "FORBIDDEN", "Votre rôle ne permet pas cette opération ( ou votre statut d'agent n'est pas encore validé) ");
 export const introuvable = (ressource = "Ressource") =>
   new AppError(404, "NOT_FOUND", `${ressource} introuvable`);
 

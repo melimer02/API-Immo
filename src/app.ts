@@ -10,10 +10,13 @@ import {
 } from "fastify-type-provider-zod";
 import { prisma } from "./lib/prisma.js";
 import { enregistrerGestionErreurs } from "./lib/errors.js";
+
+import { originesAutorisees } from "./lib/cors.js";
 import { transformerSpec } from "./lib/openapi.js";
 import { authRoutes } from "./routes/auth.js";
 import { annoncesRoutes } from "./routes/annonces.js";
 import { questionsRoutes } from "./routes/questions.js";
+import fastifyCors from "@fastify/cors";
 
 export async function buildApp() {
   const secret = process.env.JWT_SECRET;
@@ -32,10 +35,22 @@ export async function buildApp() {
   // Utilisateur courant : null tant qu'aucun hook d'authentification ne l'a rempli
   app.decorateRequest("utilisateur", null);
 
+  await app.register(fastifyCors, {
+    origin: originesAutorisees(),
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    allowedHeaders: ["Authorization", "Content-Type"],
+    exposedHeaders: ["Location"], // permet au front de lire l'URL de la ressource créée (201)
+    credentials: false, // jeton dans l'en-tête Authorization
+    maxAge: 600, 
+  });
+
+
+
+
   await app.register(fastifyJwt, {
     secret,
     // Le jeton contient { sub, role } : on le transforme en { id, role } pour le reste du code
-    formatUser: (payload) => ({ id: payload.sub, role: payload.role }),
+     formatUser: (payload) => ({ id: payload.sub, role: payload.role, statutPro: payload.statutPro }),
   });
 
   // Documentation OpenAPI générée depuis les schémas Zod (code-first)

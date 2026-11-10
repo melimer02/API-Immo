@@ -10,8 +10,6 @@ import { ConnexionBody, InscriptionBody, JetonSchema, ProfilSchema } from "../sc
 // Liste blanche des colonnes du profil : passwordHash n'est jamais lu
 const selectProfil = { id: true, name: true, email: true, role: true, createdAt: true } as const;
 
-// Hash factice : on compare quand même si l'email n'existe pas,
-// pour que le temps de réponse ne révèle pas quels emails sont inscrits.
 const HASH_FACTICE = bcrypt.hashSync("mot-de-passe-factice", 10);
 
 export const authRoutes: FastifyPluginAsyncZod = async (app) => {
@@ -64,7 +62,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, role: true, passwordHash: true },
+      select: { id: true, role: true, statutPro: true, passwordHash: true },
     });
     const ok = await bcrypt.compare(password, user?.passwordHash ?? HASH_FACTICE);
     if (!user || !ok) {
@@ -72,7 +70,7 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
       throw new AppError(401, "INVALID_CREDENTIALS", "Email ou mot de passe incorrect");
     }
     const expiresIn = process.env.JWT_EXPIRES_IN ?? "1h";
-    const token = app.jwt.sign({ sub: user.id, role: user.role }, { expiresIn });
+    const token = app.jwt.sign({ sub: user.id, role: user.role, statutPro: user.statutPro }, { expiresIn });
     return { token, tokenType: "Bearer" as const, expiresIn };
   });
 

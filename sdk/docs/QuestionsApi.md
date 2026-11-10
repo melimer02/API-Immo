@@ -310,7 +310,7 @@ example().catch(console.error);
 | **201** | Default Response |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Jeton absent, invalide ou expiré — UNAUTHENTICATED |  -  |
-| **403** | Le rôle ne permet pas l\&#39;opération — FORBIDDEN |  -  |
+| **403** | Le rôle ne permet pas l\&#39;opération  ou agent non validé — FORBIDDEN |  -  |
 | **404** | Ressource inexistante OU appartenant à un autre utilisateur (indiscernables volontairement) — NOT_FOUND |  -  |
 | **409** | Conflit avec l\&#39;état actuel — EMAIL_ALREADY_USED, QUESTION_ALREADY_ANSWERED |  -  |
 
