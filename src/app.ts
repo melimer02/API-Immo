@@ -7,6 +7,7 @@ import {
 } from "fastify-type-provider-zod";
 import { prisma } from "./lib/prisma.js";
 
+
 //une instance de l'appli 
 export function buildApp() {
   const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
