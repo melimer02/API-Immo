@@ -4,7 +4,7 @@
   "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:types && vitest run",
     "dev": "tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
@@ -14,7 +14,9 @@
     "openapi:export": "tsx scripts/export-openapi.ts",
     "openapi:lint": "redocly lint openapi.yaml",
     "sdk:generate": "openapi-generator-cli generate -i openapi.yaml -g typescript-fetch -o sdk --additional-properties=supportsES6=true",
-    "openapi": "npm run openapi:export && npm run openapi:lint && npm run sdk:generate"
+    "openapi": "npm run openapi:export && npm run openapi:lint && npm run sdk:generate",
+    "test:types": "tsc -p tsconfig.test.json",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -45,6 +47,7 @@
     "@types/node": "^26.6.6",
     "prisma": "^7.10.1",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
   }
 }

@@ -18,13 +18,13 @@ import { annoncesRoutes } from "./routes/annonces.js";
 import { questionsRoutes } from "./routes/questions.js";
 import fastifyCors from "@fastify/cors";
 
-export async function buildApp() {
+export async function buildApp(options: { logger?: boolean } = {}) {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error("JWT_SECRET manquant ou trop court (32 caractères minimum)");
   }
 
-  const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>();
+  const app = Fastify({ logger: options.logger ?? true }).withTypeProvider<ZodTypeProvider>();
 
   // Zod valide les entrées et sérialise les sorties (les champs hors schéma sont retirés)
   app.setValidatorCompiler(validatorCompiler);
