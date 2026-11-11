@@ -169,3 +169,18 @@ describe("IDOR : un agent ne touche pas aux annonces d'un autre agent", () => {
     expect(enBase.statutPublication).toBe("BROUILLON");
   });
 });
+
+it("bloque les requêtes provenant d'une origine non autorisée (CORS)", async () => {
+    // Un site pirate tente de récupérer la liste des annonces
+    const response = await app.inject({
+      method: "GET",
+      url: "/annonces",
+      headers: {
+        Origin: "http://site-pirate.com" 
+      }
+    });
+
+    //  Fastify et le plugin CORS voient que le site n'est pas dans la liste.
+    // le serveur refuse d'ajouter l'en-tête "access-control-allow-origin" 
+    expect(response.headers).not.toHaveProperty("access-control-allow-origin");
+  });

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { InscriptionBody } from "../../src/schemas/auth.js";
 import { CreerAnnonceBody, ListeAnnoncesQuery, ModifierAnnonceBody } from "../../src/schemas/annonces.js";
 import { IdParams } from "../../src/schemas/commun.js";
-
+import { originesAutorisees } from "../../src/lib/cors.js";
 const annonceValide = {
   titre: "Appartement lumineux",
   description: "Une description assez longue.",
@@ -77,5 +77,16 @@ describe("ListeAnnoncesQuery et IdParams", () => {
   it("refuse un id non numérique (400 au lieu d'un 500)", () => {
     expect(IdParams.safeParse({ id: "abc" }).success).toBe(false);
     expect(IdParams.parse({ id: "42" })).toEqual({ id: 42 });
+  });
+});
+
+/// test CORS : la liste des origines autorisées
+describe("originesAutorisees (CORS)", () => {
+  it("lit une liste d'origines séparées par des virgules", () => {
+    expect(originesAutorisees("http://a.fr, http://b.fr")).toEqual(["http://a.fr", "http://b.fr"]);
+  });
+
+  it("refuse *", () => {
+    expect(() => originesAutorisees("*")).toThrow();
   });
 });
