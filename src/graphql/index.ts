@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { GraphQLError } from "graphql";
+import { GraphQLError, NoSchemaIntrospectionCustomRule } from "graphql";
+import depthLimit from "graphql-depth-limit";
 import mercurius from "mercurius";
 import { schema } from "./schema.js";
 import { authentifierGraphQL, construireContexte } from "./contexte.js";
@@ -7,8 +8,15 @@ import { resolversTypes } from "./types.js";
 import { Query } from "./queries.js";
 import { Mutation } from "./mutations.js";
 
-/** Profondeur maximale d'une requête GraphQL (garde-fou contre les requêtes imbriquées abusives) */
-export const PROFONDEUR_MAX = 5;
+/**
+ * Profondeur maximale d'une requête GraphQL (garde-fou contre les requêtes imbriquées abusives).
+ * graphql-depth-limit compte à partir de 0 pour le premier champ :
+ *   annonces(0) > data(1) > questions(2) > reponse(3) > contenu(4)              → acceptée
+ *   annonces(0) > data(1) > questions(2) > reponse(3) > auteur(4) > name(5)     → refusée
+ */
+export const PROFONDEUR_MAX = 4;
+
+const enProduction = process.env.NODE_ENV === "production";
 
 /**
  * Branche GraphQL (Mercurius) sur le même serveur que l'API REST : POST /graphql.
@@ -30,8 +38,13 @@ export async function graphqlPlugin(app: FastifyInstance) {
     schema,
     resolvers: { ...resolversTypes, Query, Mutation },
     context: (req) => construireContexte(req),
-    queryDepth: PROFONDEUR_MAX,
-    graphiql: process.env.NODE_ENV !== "production",
+    // Garde-fous appliqués à chaque requête, avant toute exécution :
+    // - limite de profondeur (les champs d'introspection __schema/__type, utilisés par GraphiQL, ne comptent pas) ;
+    // - en production, introspection désactivée : le schéma n'est pas exposé à n'importe qui.
+    validationRules: enProduction
+      ? [depthLimit(PROFONDEUR_MAX), NoSchemaIntrospectionCustomRule]
+      : [depthLimit(PROFONDEUR_MAX)],
+    graphiql: !enProduction,
     errorFormatter: (execution, ctx) => {
       // Une erreur inattendue (bug, Prisma…) ne doit rien révéler au client :
       // seules les erreurs portant un code (ErrorWithProps) sont transmises telles quelles.
