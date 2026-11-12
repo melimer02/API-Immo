@@ -4,13 +4,17 @@ import { prisma } from "../lib/prisma.js";
 import { AppError, nonAuthentifie } from "../lib/errors.js";
 import { authentifier, utilisateurConnecte } from "../lib/auth.js";
 import { Prisma } from "../generated/prisma/client.js";
-import { erreurs, securite, securitePublique, ErreurSchema } from "../schemas/commun.js";
+import { ErreurSchema, erreurs, erreurTropDeRequetes, securite, securitePublique } from "../schemas/commun.js";
 import { ConnexionBody, InscriptionBody, JetonSchema, ProfilSchema } from "../schemas/auth.js";
 
 // Liste blanche des colonnes du profil : passwordHash n'est jamais lu
 const selectProfil = { id: true, name: true, email: true, role: true, createdAt: true } as const;
 
 const HASH_FACTICE = bcrypt.hashSync("mot-de-passe-factice", 10);
+
+/** Limitation de débit sur la connexion : contre la force brute et le credential stuffing */
+const LOGIN_MAX_TENTATIVES = Number(process.env.LOGIN_MAX_TENTATIVES ?? 10);
+const LOGIN_FENETRE = process.env.LOGIN_FENETRE ?? "15 minutes";
 
 export const authRoutes: FastifyPluginAsyncZod = async (app) => {
   // ── POST /auth/register ─────────────────────────────────────────
@@ -45,17 +49,20 @@ export const authRoutes: FastifyPluginAsyncZod = async (app) => {
 
   // ── POST /auth/login ────────────────────────────────────────────
   app.post("/auth/login", {
+    // Au-delà de LOGIN_MAX_TENTATIVES par adresse IP dans la fenêtre → 429 + Retry-After
+    config: { rateLimit: { max: LOGIN_MAX_TENTATIVES, timeWindow: LOGIN_FENETRE } },
     schema: {
       tags: ["auth"],
       summary: "S'authentifier et obtenir un JWT",
       operationId: "connecter",
       security: securitePublique,
-      description: "401 avec le même message que l'email ou le mot de passe soit faux.",
+      description: "401 avec le même message que l'email ou le mot de passe soit faux. Limité à 10 tentatives par tranche de 15 minutes et par adresse IP : au-delà, 429 avec l'en-tête Retry-After.",
       body: ConnexionBody,
             response: {
         200: JetonSchema,
         400: erreurs[400],
         401: ErreurSchema.describe("Email ou mot de passe incorrect — INVALID_CREDENTIALS"),
+        429: erreurTropDeRequetes,
       },
     },
   }, async (req) => {

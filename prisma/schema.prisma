@@ -138,3 +138,13 @@ model Favori {
 
   @@unique([userId, annonceId])
 }
+
+/// Compteurs de limitation de débit (rate limit), stockés en base :
+/// aucun état applicatif en mémoire, et une limite partagée entre toutes les instances du serveur.
+model LimiteDebit {
+  cle      String   @id
+  compteur Int
+  expireA  DateTime
+
+  @@map("limite_debit")
+}

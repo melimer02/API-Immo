@@ -15,7 +15,7 @@ export default async function setup() {
 
   const { prisma } = await import("../../src/lib/prisma.js");
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "Reponse", "Question", "Favori", "Photo", "Annonce", "user" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "Reponse", "Question", "Favori", "Photo", "Annonce", "user", "limite_debit" RESTART IDENTITY CASCADE',
   );
   await prisma.$disconnect();
 
