@@ -1,6 +1,5 @@
-import { jsonSchemaTransformObject } from "fastify-type-provider-zod";
-import type { SwaggerTransformObject } from "@fastify/swagger";
-
+import { jsonSchemaTransform, jsonSchemaTransformObject } from "fastify-type-provider-zod";
+import type { SwaggerTransform, SwaggerTransformObject } from "@fastify/swagger";
 /**
  * fastify-type-provider-zod publie chaque schéma nommé en deux variantes :
  * "Annonce" (ce que l'API renvoie) et "AnnonceInput" (ce que l'API reçoit).
@@ -36,4 +35,17 @@ export const transformerSpec: SwaggerTransformObject = (documentObject) => {
     Object.entries(schemas).filter(([nom]) => utilises.has(nom)),
   );
   return spec as ReturnType<SwaggerTransformObject>;
+};
+
+/**
+ * Transformation des routes pour la spec REST.
+ * Les routes GraphQL (/graphql, /graphiql…) ne font pas partie du contrat OpenAPI :
+ * leur contrat est le schéma GraphQL. On les masque, sans tenter de les convertir
+ * (leurs schémas ne sont pas des schémas Zod).
+ */
+export const transformerRoute: SwaggerTransform = (donnees) => {
+  if (donnees.url.startsWith("/graphql") || donnees.url.startsWith("/graphiql")) {
+    return { schema: { hide: true }, url: donnees.url };
+  }
+  return jsonSchemaTransform(donnees);
 };

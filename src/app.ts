@@ -3,7 +3,6 @@ import fastifyJwt from "@fastify/jwt";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import {
-  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
@@ -12,7 +11,8 @@ import { prisma } from "./lib/prisma.js";
 import { enregistrerGestionErreurs } from "./lib/errors.js";
 
 import { originesAutorisees } from "./lib/cors.js";
-import { transformerSpec } from "./lib/openapi.js";
+import { transformerRoute, transformerSpec } from "./lib/openapi.js";
+import { graphqlPlugin } from "./graphql/index.js";
 import { authRoutes } from "./routes/auth.js";
 import { annoncesRoutes } from "./routes/annonces.js";
 import { questionsRoutes } from "./routes/questions.js";
@@ -90,7 +90,7 @@ export async function buildApp(options: { logger?: boolean } = {}) {
         },
       },
     },
-    transform: jsonSchemaTransform,
+    transform: transformerRoute,
     // Publie les schémas nommés (.meta({ id })) dans components/schemas et les référence par $ref
     transformObject: transformerSpec,
   });
@@ -104,6 +104,8 @@ export async function buildApp(options: { logger?: boolean } = {}) {
   await app.register(authRoutes);
   await app.register(annoncesRoutes);
   await app.register(questionsRoutes);
+  // API GraphQL sur le même domaine : POST /graphql
+  await app.register(graphqlPlugin);
 
   return app;
 }
