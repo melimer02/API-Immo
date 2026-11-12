@@ -17,7 +17,10 @@ import { authRoutes } from "./routes/auth.js";
 import { annoncesRoutes } from "./routes/annonces.js";
 import { questionsRoutes } from "./routes/questions.js";
 import fastifyCors from "@fastify/cors";
+import fastifyRateLimit from "@fastify/rate-limit";
+import { optionsLimiteDebit } from "./lib/limite-debit.js";
 import { enregistrerCache } from "./lib/cache.js";
+
 
 
 export async function buildApp(options: { logger?: boolean } = {}) {
@@ -97,6 +100,8 @@ export async function buildApp(options: { logger?: boolean } = {}) {
     // Publie les schémas nommés (.meta({ id })) dans components/schemas et les référence par $ref
     transformObject: transformerSpec,
   });
+    // Limitation de débit, activée route par route (POST /auth/login), compteurs en base
+  await app.register(fastifyRateLimit, optionsLimiteDebit);
   await app.register(fastifySwaggerUi, { routePrefix: "/docs" });
 
   app.get("/health", { schema: { hide: true } }, async () => {

@@ -13,9 +13,13 @@ import {
   type CreerAnnonceInput,
 } from "../sdk/index.js";
 
+import { prisma } from "../src/lib/prisma.js";
+
 export const MOT_DE_PASSE = "motdepasse123";
 
 export async function demarrerServeur(): Promise<{ app: FastifyInstance; base: string }> {
+  // Chaque fichier de test repart avec des compteurs de limitation de débit vides
+  await prisma.limiteDebit.deleteMany();
   const app = await buildApp({ logger: false });
   await app.listen({ port: 0, host: "127.0.0.1" }); // port 0 : le système choisit un port libre
   const adresse = app.server.address();

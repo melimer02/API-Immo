@@ -84,7 +84,7 @@ example().catch(console.error);
 | **201** | Default Response |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Jeton absent, invalide ou expiré — UNAUTHENTICATED |  -  |
-| **403** | Le rôle ne permet pas l\&#39;opération  ou agent non validé — FORBIDDEN |  -  |
+| **403** | Le rôle ne permet pas l\&#39;opération, ou agent non validé — FORBIDDEN |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -158,7 +158,7 @@ example().catch(console.error);
 | **200** | Default Response |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Jeton absent, invalide ou expiré — UNAUTHENTICATED |  -  |
-| **403** | Le rôle ne permet pas l\&#39;opération  ou agent non validé — FORBIDDEN |  -  |
+| **403** | Le rôle ne permet pas l\&#39;opération, ou agent non validé — FORBIDDEN |  -  |
 | **404** | Ressource inexistante OU appartenant à un autre utilisateur (indiscernables volontairement) — NOT_FOUND |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
@@ -388,7 +388,7 @@ example().catch(console.error);
 | **200** | Default Response |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Jeton absent, invalide ou expiré — UNAUTHENTICATED |  -  |
-| **403** | Le rôle ne permet pas l\&#39;opération  ou agent non validé — FORBIDDEN |  -  |
+| **403** | Le rôle ne permet pas l\&#39;opération, ou agent non validé — FORBIDDEN |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -465,7 +465,7 @@ example().catch(console.error);
 | **200** | Default Response |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Jeton absent, invalide ou expiré — UNAUTHENTICATED |  -  |
-| **403** | Le rôle ne permet pas l\&#39;opération  ou agent non validé — FORBIDDEN |  -  |
+| **403** | Le rôle ne permet pas l\&#39;opération, ou agent non validé — FORBIDDEN |  -  |
 | **404** | Ressource inexistante OU appartenant à un autre utilisateur (indiscernables volontairement) — NOT_FOUND |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
@@ -540,7 +540,7 @@ example().catch(console.error);
 | **200** | Default Response |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Jeton absent, invalide ou expiré — UNAUTHENTICATED |  -  |
-| **403** | Le rôle ne permet pas l\&#39;opération  ou agent non validé — FORBIDDEN |  -  |
+| **403** | Le rôle ne permet pas l\&#39;opération, ou agent non validé — FORBIDDEN |  -  |
 | **404** | Ressource inexistante OU appartenant à un autre utilisateur (indiscernables volontairement) — NOT_FOUND |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
@@ -615,7 +615,7 @@ example().catch(console.error);
 | **204** | Annonce supprimée |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Jeton absent, invalide ou expiré — UNAUTHENTICATED |  -  |
-| **403** | Le rôle ne permet pas l\&#39;opération  ou agent non validé — FORBIDDEN |  -  |
+| **403** | Le rôle ne permet pas l\&#39;opération, ou agent non validé — FORBIDDEN |  -  |
 | **404** | Ressource inexistante OU appartenant à un autre utilisateur (indiscernables volontairement) — NOT_FOUND |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

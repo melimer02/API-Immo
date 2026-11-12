@@ -16,7 +16,7 @@ All URIs are relative to *http://localhost:3000*
 
 S\&#39;authentifier et obtenir un JWT
 
-401 avec le même message que l\&#39;email ou le mot de passe soit faux.
+401 avec le même message que l\&#39;email ou le mot de passe soit faux. Limité à 10 tentatives par tranche de 15 minutes et par adresse IP : au-delà, 429 avec l\&#39;en-tête Retry-After.
 
 ### Example
 
@@ -75,6 +75,7 @@ No authorization required
 | **200** | Default Response |  -  |
 | **400** | Requête invalide (body, query ou path) — VALIDATION_FAILED ou BAD_REQUEST |  -  |
 | **401** | Email ou mot de passe incorrect — INVALID_CREDENTIALS |  -  |
+| **429** | Trop de tentatives : réessayer après le délai indiqué par Retry-After — TOO_MANY_REQUESTS |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

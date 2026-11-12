@@ -19,6 +19,7 @@ export type CodeErreur =
   | "EMAIL_ALREADY_USED"
   | "QUESTION_ALREADY_ANSWERED"
   | "CONFLICT"
+  | "TOO_MANY_REQUESTS"
   | "INTERNAL_ERROR";
 
 export type DetailErreur = { field: string; message: string };

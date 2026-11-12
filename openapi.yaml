@@ -28,50 +28,6 @@ components:
       bearerFormat: JWT
       description: Jeton obtenu via POST /auth/login
   schemas:
-    InscriptionInput:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 2
-          maxLength: 100
-          description: Nom affiché
-        email:
-          type: string
-          format: email
-          pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
-          description: Email (unique, sert d'identifiant de connexion)
-        password:
-          type: string
-          minLength: 8
-          maxLength: 100
-          description: Mot de passe (8 caractères minimum)
-      required:
-        - name
-        - email
-        - password
-      description: "Tout autre champ (role, statutPro…) est ignoré : un compte créé
-        ici est toujours USER."
-      example:
-        name: Marie Durand
-        email: marie@exemple.fr
-        password: motdepasse123
-    ConnexionInput:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
-        password:
-          type: string
-          minLength: 1
-      required:
-        - email
-        - password
-      example:
-        email: agent1@immo.fr
-        password: motdepasse123
     TypeBienInput:
       type: string
       enum:
@@ -215,6 +171,50 @@ components:
         - contenu
       example:
         contenu: Oui, les animaux sont acceptés.
+    InscriptionInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nom affiché
+        email:
+          type: string
+          format: email
+          pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+          description: Email (unique, sert d'identifiant de connexion)
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+          description: Mot de passe (8 caractères minimum)
+      required:
+        - name
+        - email
+        - password
+      description: "Tout autre champ (role, statutPro…) est ignoré : un compte créé
+        ici est toujours USER."
+      example:
+        name: Marie Durand
+        email: marie@exemple.fr
+        password: motdepasse123
+    ConnexionInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+        password:
+          type: string
+          minLength: 1
+      required:
+        - email
+        - password
+      example:
+        email: agent1@immo.fr
+        password: motdepasse123
     Erreur:
       type: object
       properties:
@@ -233,6 +233,7 @@ components:
                 - EMAIL_ALREADY_USED
                 - QUESTION_ALREADY_ANSWERED
                 - CONFLICT
+                - TOO_MANY_REQUESTS
                 - INTERNAL_ERROR
               description: "Code stable, lisible par une machine. Fait partie du contrat : ne
                 change jamais."
@@ -305,49 +306,6 @@ components:
         - name
       additionalProperties: false
       description: Auteur visible publiquement (ni email ni mot de passe)
-    Profil:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        role:
-          type: string
-          enum:
-            - USER
-            - AGENT
-            - ADMIN
-        createdAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - name
-        - email
-        - role
-        - createdAt
-      additionalProperties: false
-      description: Profil de l'utilisateur (jamais le mot de passe ni son hash)
-    Jeton:
-      type: object
-      properties:
-        token:
-          type: string
-          description: "JWT signé, à envoyer dans l'en-tête Authorization: Bearer <token>"
-        tokenType:
-          type: string
-          const: Bearer
-        expiresIn:
-          type: string
-          description: Durée de validité (ex. 1h)
-      required:
-        - token
-        - tokenType
-        - expiresIn
-      additionalProperties: false
     TypeBien:
       type: string
       enum:
@@ -518,6 +476,49 @@ components:
         - data
         - meta
       additionalProperties: false
+    Profil:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum:
+            - USER
+            - AGENT
+            - ADMIN
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
+      additionalProperties: false
+      description: Profil de l'utilisateur (jamais le mot de passe ni son hash)
+    Jeton:
+      type: object
+      properties:
+        token:
+          type: string
+          description: "JWT signé, à envoyer dans l'en-tête Authorization: Bearer <token>"
+        tokenType:
+          type: string
+          const: Bearer
+        expiresIn:
+          type: string
+          description: Durée de validité (ex. 1h)
+      required:
+        - token
+        - tokenType
+        - expiresIn
+      additionalProperties: false
 paths:
   /auth/register:
     post:
@@ -561,7 +562,9 @@ paths:
       summary: S'authentifier et obtenir un JWT
       tags:
         - auth
-      description: 401 avec le même message que l'email ou le mot de passe soit faux.
+      description: "401 avec le même message que l'email ou le mot de passe soit faux.
+        Limité à 10 tentatives par tranche de 15 minutes et par adresse IP :
+        au-delà, 429 avec l'en-tête Retry-After."
       requestBody:
         required: true
         content:
@@ -585,6 +588,13 @@ paths:
                 $ref: "#/components/schemas/Erreur"
         "401":
           description: Email ou mot de passe incorrect — INVALID_CREDENTIALS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Erreur"
+        "429":
+          description: "Trop de tentatives : réessayer après le délai indiqué par
+            Retry-After — TOO_MANY_REQUESTS"
           content:
             application/json:
               schema:
@@ -706,7 +716,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erreur"
         "403":
-          description: Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN
+          description: Le rôle ne permet pas l'opération, ou agent non validé — FORBIDDEN
           content:
             application/json:
               schema:
@@ -802,7 +812,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erreur"
         "403":
-          description: Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN
+          description: Le rôle ne permet pas l'opération, ou agent non validé — FORBIDDEN
           content:
             application/json:
               schema:
@@ -848,7 +858,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erreur"
         "403":
-          description: Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN
+          description: Le rôle ne permet pas l'opération, ou agent non validé — FORBIDDEN
           content:
             application/json:
               schema:
@@ -907,7 +917,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erreur"
         "403":
-          description: Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN
+          description: Le rôle ne permet pas l'opération, ou agent non validé — FORBIDDEN
           content:
             application/json:
               schema:
@@ -950,7 +960,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erreur"
         "403":
-          description: Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN
+          description: Le rôle ne permet pas l'opération, ou agent non validé — FORBIDDEN
           content:
             application/json:
               schema:
@@ -999,7 +1009,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erreur"
         "403":
-          description: Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN
+          description: Le rôle ne permet pas l'opération, ou agent non validé — FORBIDDEN
           content:
             application/json:
               schema:
@@ -1210,7 +1220,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Erreur"
         "403":
-          description: Le rôle ne permet pas l'opération  ou agent non validé — FORBIDDEN
+          description: Le rôle ne permet pas l'opération, ou agent non validé — FORBIDDEN
           content:
             application/json:
               schema:
