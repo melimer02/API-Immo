@@ -55,6 +55,7 @@ export const ErreurErrorCodeEnum = {
     EmailAlreadyUsed: 'EMAIL_ALREADY_USED',
     QuestionAlreadyAnswered: 'QUESTION_ALREADY_ANSWERED',
     Conflict: 'CONFLICT',
+    TooManyRequests: 'TOO_MANY_REQUESTS',
     InternalError: 'INTERNAL_ERROR',
 } as const;
 export type ErreurErrorCodeEnum = typeof ErreurErrorCodeEnum[keyof typeof ErreurErrorCodeEnum];

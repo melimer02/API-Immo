@@ -88,7 +88,7 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * 401 avec le même message que l\'email ou le mot de passe soit faux.
+     * 401 avec le même message que l\'email ou le mot de passe soit faux. Limité à 10 tentatives par tranche de 15 minutes et par adresse IP : au-delà, 429 avec l\'en-tête Retry-After.
      * S\'authentifier et obtenir un JWT
      */
     async connecterRaw(requestParameters: ConnecterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Jeton>> {
@@ -99,7 +99,7 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * 401 avec le même message que l\'email ou le mot de passe soit faux.
+     * 401 avec le même message que l\'email ou le mot de passe soit faux. Limité à 10 tentatives par tranche de 15 minutes et par adresse IP : au-delà, 429 avec l\'en-tête Retry-After.
      * S\'authentifier et obtenir un JWT
      */
     async connecter(requestParameters: ConnecterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Jeton> {
