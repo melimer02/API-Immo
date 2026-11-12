@@ -19,6 +19,9 @@ import { questionsRoutes } from "./routes/questions.js";
 import fastifyCors from "@fastify/cors";
 import fastifyRateLimit from "@fastify/rate-limit";
 import { optionsLimiteDebit } from "./lib/limite-debit.js";
+import { enregistrerCache } from "./lib/cache.js";
+
+
 
 export async function buildApp(options: { logger?: boolean } = {}) {
   const secret = process.env.JWT_SECRET;
@@ -33,7 +36,8 @@ export async function buildApp(options: { logger?: boolean } = {}) {
   app.setSerializerCompiler(serializerCompiler);
 
   enregistrerGestionErreurs(app);
-
+  enregistrerCache(app);
+  
   // Utilisateur courant : null tant qu'aucun hook d'authentification ne l'a rempli
   app.decorateRequest("utilisateur", null);
 
