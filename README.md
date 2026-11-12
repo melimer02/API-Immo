@@ -437,3 +437,23 @@ Résultat : **6 tests échouent**, dont les 4 tests IDOR. La suite ne reste pas 
 - Cache HTTP (`Cache-Control`, `ETag`, `304`)
 - Durcissement (limitation du nombre de tentatives de connexion)
 - `SECURITY.md`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
