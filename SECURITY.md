@@ -1,6 +1,6 @@
 # Audit de sécurité — ImmoService
 
-## 1. Failles recherchées (OWASP API Security Top 10, édition 2023)
+## 1. Failles recherchées (OWASP API Security Top 10)
 
 | Risque | Recherche et protection en place |
 |---|---|
