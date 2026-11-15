@@ -29,7 +29,7 @@ import {
   PublicationSchema,
 } from "../schemas/annonces.js";
 
-/** Liste blanche des colonnes renvoyées : jamais de findMany() "nu" */
+/** Liste blanche des colonnes renvoyées  */
 const selectAnnonce = {
   id: true,
   titre: true,

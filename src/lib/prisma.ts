@@ -7,7 +7,7 @@ if (!connectionString) {
 }
 
 // Prisma 7 : c'est nous qui fournissons la connexion, via l'adaptateur pg.
-// Chaque requête SQL émet un événement "query" : on les compte (mesure du N+1).
+// Chaque requête SQL émet un événement "query" 
 export const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
   log: [{ emit: "event", level: "query" }],
@@ -18,7 +18,7 @@ prisma.$on("query", () => {
   nombreRequetesSql++;
 });
 
-/** Compteur des requêtes SQL envoyées par Prisma (utilisé par le test N+1) */
+/** Compteur des requêtes SQL envoyées par Prisma */
 export const compteurSql = {
   lire: () => nombreRequetesSql,
   reinitialiser: () => {

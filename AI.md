@@ -4,20 +4,21 @@ Pendant ce projet, nous avons utilisé **Claude**  comme assistant. Ce fichier e
 
 ## À quoi l'IA nous a servi
 
-**Comprendre le cours et le sujet.** On lui a demandé de résumer le cours et d'expliquer certaines notions (contrat, URI, code-first ou contract-first). 
+- **Comprendre le cours et le sujet.** On lui a demandé de résumer le cours et d'expliquer certaines notions (contrat, URI, code-first ou contract-first). 
 
-**Générer du code.** Pour chaque étape, Claude nous a proposé du code. Nous l'avons lu, compris, adapté à notre projet, puis testé :
-- la mise en place : `docker-compose.yml`, `.env.example`, `prisma.config.ts`, l'adaptation du schéma Prisma et du seed du TP1 ;
+- **Nous a aider à faires des choix techniques**
 
-- le contrat : la configuration OpenAPI, le script d'export de la spec, la config Redocly et les scripts npm de génération du SDK ;
-- le CORS, les tests Vitest et la base de test séparée ;
+- **Générer du code.** Pour chaque étape, Claude nous a proposé du code. Nous l'avons lu, compris, adapté à notre projet, puis testé :
+- **la mise en place** : `docker-compose.yml`, `.env.example`, `prisma.config.ts`, l'adaptation du schéma Prisma et du seed du TP1 ;
+
+- **le contrat** : la configuration OpenAPI, le script d'export de la spec, la config Redocly et les scripts npm de génération du SDK ;
+- **Écrire les tests** Vitest et la base de test séparée ;
 - l'API GraphQL (schéma, resolvers, DataLoader, limite de profondeur) ;
-- le cache HTTP et la limitation de débit sur le login ;
 
 
-**Nous aider à corriger des erreurs.** Quand une commande échouait (module introuvable, erreur de build, base de test arrêtée, port déjà utilisé…), on lui donnait le message d'erreur et il nous expliquait la cause.
+- **Nous aider à corriger des erreurs.** Quand une commande échouait (module introuvable, erreur de build, base de test arrêtée, port déjà utilisé…), on lui donnait le message d'erreur et il nous expliquait la cause.
 
-**Gérer Git.** Claude nous a aidé dans la gestion des branches et sur les merge requests. Il nous a aussi aidées à résoudre un conflit de fusion entre les étapes 7 et 8. Les branches, les commits, les relectures croisées et les fusions, c'est nous qui les avons faits.
+- **Gérer Git.** Claude nous a aidé dans la gestion des branches et sur les merge requests. Il nous a aussi aidées à résoudre un conflit de fusion entre les étapes 7 et 8. Les branches, les commits, les relectures croisées et les fusions, c'est nous qui les avons faits.
 
 ## Ce que nous avons décidé nous-mêmes
 
@@ -26,6 +27,7 @@ Pendant ce projet, nous avons utilisé **Claude**  comme assistant. Ce fichier e
 - La répartition du travail entre nous deux, étape par étape.
 - Les vérifications à la main : navigateur, Swagger UI, GraphiQL, `curl`, `psql`.
 - La relecture de la spec générée et du code proposé, avant chaque merge request.
+- Casser le code pour les vérifier les test ( idor)
 
 ## Les erreurs de l'IA que nous avons repérées
 

@@ -3,7 +3,6 @@ import { z } from "zod";
 /**
  * Inscription : seulement name, email, password.
  * Zod SUPPRIME les champs inconnus : un "role": "ADMIN" envoyé par le client
- * disparaît avant d'atteindre le code. Le rôle est fixé côté serveur (USER).
  */
 export const InscriptionBody = z
   .object({
@@ -27,7 +26,7 @@ export const ConnexionBody = z
     example: { email: "agent1@immo.fr", password: "motdepasse123" },
   });
 
-/** Profil renvoyé au client : liste blanche, passwordHash n'y figure pas */
+/** Profil renvoyé au client : liste blanche */
 export const ProfilSchema = z
   .object({
     id: z.string(),

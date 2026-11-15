@@ -7,7 +7,7 @@ import { Prisma } from "../generated/prisma/client.js";
 import { ErreurSchema, erreurs, erreurTropDeRequetes, securite, securitePublique } from "../schemas/commun.js";
 import { ConnexionBody, InscriptionBody, JetonSchema, ProfilSchema } from "../schemas/auth.js";
 
-// Liste blanche des colonnes du profil : passwordHash n'est jamais lu
+// Liste blanche des colonnes du profil 
 const selectProfil = { id: true, name: true, email: true, role: true, createdAt: true } as const;
 
 const HASH_FACTICE = bcrypt.hashSync("mot-de-passe-factice", 10);

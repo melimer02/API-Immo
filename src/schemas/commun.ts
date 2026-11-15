@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Les schémas portant un `id` (via .meta) sont publiés une seule fois dans
+ * Les schémas portant un `id`  sont publiés une seule fois dans
  * components/schemas de la spec OpenAPI, puis référencés par $ref partout ailleurs.
  */
 

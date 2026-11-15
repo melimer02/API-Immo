@@ -7,7 +7,6 @@ import { Prisma } from "../generated/prisma/client.js";
 
 /**
  * Codes d'erreur stables : ils font partie du contrat de l'API.
- * Un client peut s'appuyer dessus, donc on ne les renomme jamais.
  */
 export type CodeErreur =
   | "VALIDATION_FAILED"
