@@ -1,10 +1,10 @@
 # ImmoService — API REST & GraphQL pour le domaine immobilier
 
-Projet n°2 du cours **Web Services** (Master 2 IWOCS — Université Le Havre Normandie).
 
-Au TP1, l'application Next.js était son propre et unique client. Ici, on construit un **service** destiné à des clients que l'on ne contrôle pas (scripts, tests, application mobile, autre service). Le livrable est une **API**, sans interface : le contrat entre le service et ses clients devient explicite.
 
-Ce projet reprend uniquement les **données** du TP1 (schéma Prisma et seed, adaptés). L'application Next du TP1 n'est ni modifiée ni requise.
+L'application annonces-immo (Next.js )était son propre et unique client. Ici, on construit un **service** destiné à des clients que l'on ne contrôle pas (scripts, tests, application mobile, autre service). Le livrable est une **API**, sans interface : le contrat entre le service et ses clients devient explicite.
+
+
 
 ------
 
@@ -32,9 +32,9 @@ Vérifications :
 - `curl localhost:3000/health` → `{"status":"ok"}`
 - documentation interactive : http://localhost:3000/docs
 - API GraphQL (interface de test) : http://localhost:3000/graphiql
-- tests : `npm test` → `99 passed`
+- tests : `npm test` → `100 passed`
 
-Audit de sécurité (OWASP API Top 10, stockage et vol du JWT) : voir [`SECURITY.md`](SECURITY.md). Usage des assistants IA pendant le projet : voir [`AI.md`](AI.md).
+
 
 ## Comptes de test
 
@@ -99,11 +99,7 @@ curl -s -X POST localhost:3000/auth/login -H 'content-type: application/json' \
 | Limitation de débit       | `@fastify/rate-limit`, compteurs stockés dans PostgreSQL     |
 | Tests                     | Vitest, sur une base de test séparée                         |
 
-### Pourquoi Fastify plutôt que NestJS
 
-NestJS intègre nativement OpenAPI et GraphQL, mais repose sur beaucoup de  mécanismes implicites (décorateurs, injection de dépendances, modules).  Fastify est plus léger : on assemble soi-même chaque pièce (validation,  documentation, GraphQL, authentification), ce qui oblige à comprendre et maîtriser chacune.
-
-Fastify s'intègre aussi naturellement avec **Zod** grâce à `fastify-type-provider-zod` : un même schéma Zod valide les requêtes, type le code et produit la  documentation OpenAPI. Enfin, nous connaissions déjà Zod depuis le TP1,  ce qui nous permet de réutiliser nos règles de validation.
 
 ### Pourquoi OpenAPI en code-first
 
@@ -113,43 +109,8 @@ Nous avons choisi le **code-first** : les schémas Zod sont l'unique source de v
 
 Le risque de cette  approche est que la spécification reflète un code mal conçu. Pour le  limiter, nous avons conçu les routes (ressources, verbes, codes de  statut) **avant** de les coder, et nous relisons la  spécification générée : cette relecture nous a fait corriger des codes  d'erreur annoncés à tort (un 409 promis sur des routes qui ne peuvent  pas le renvoyer, un 401 de login mal décrit) et un champ de date dont le format n'était pas documenté.
 
-### Pourquoi pas de table `session`
 
-Au TP1, Better Auth stockait les sessions en base (tables `session`, `account`, `verification`). Une API REST est **sans état** : chaque requête porte tout ce qui est nécessaire pour être traitée. L'authentification se fait donc par **JWT** : le jeton, signé par le serveur, contient l'identifiant, le rôle et la date d'expiration de l'utilisateur. Le serveur n'a qu'à vérifier la  signature, sans rien stocker ni consulter.
 
-Conséquences :
-
-- les tables Better Auth sont supprimées et remplacées par un champ `passwordHash` sur `User` ;
-- le serveur peut être dupliqué derrière un répartiteur de charge sans partager d'état ;
-- contrepartie : un JWT ne peut pas être révoqué avant son expiration, d'où une durée de vie courte (voir `SECURITY.md`).
-
-### Hachage des mots de passe
-
-Les mots de passe ne sont jamais stockés en clair. Ils sont hachés avec **bcrypt**, un algorithme éprouvé, volontairement lent et salé. Nous utilisons l'implémentation `bcryptjs`, écrite en JavaScript pur : même algorithme, mais aucune compilation  native à l'installation, donc pas de risque d'échec sur une machine  vierge.
-
-### Adaptations du schéma Prisma par rapport au TP1
-
-| Changement                                                   | Raison                                                       |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Suppression de `Session`, `Account`, `Verification`, `emailVerified`, `image` | spécifiques à Better Auth, inutiles pour une API sans état   |
-| Ajout de `passwordHash` sur `User`, `id` généré par `cuid()` | avant, Better Auth créait les identifiants et stockait le mot de passe |
-| La réponse d'une question devient un **modèle `Reponse`** (au lieu d'un champ texte) | permet de savoir qui a répondu et d'en faire une sous-ressource ; une seule réponse par question (`questionId` unique) |
-| `Photo` : une URL (Picsum) et un texte alternatif `alt`      | aucun upload n'est demandé ; le texte alternatif est utile à l'accessibilité |
-| `ville` obligatoire, ajout de `surface`                      | la ville sert de filtre de recherche                         |
-| Index sur `auteurId` et `ville`                              | requêtes fréquentes : « mes annonces », filtrage par ville   |
-| `role` (`USER` / `AGENT` / `ADMIN`) et `statutPro` conservés | font partie du domaine                                       |
-
-Les migrations du TP1 ne sont pas reprises : le projet repart d'une migration initiale propre, versionnée dans `prisma/migrations`.
-
-### Configuration et environnement
-
-- **Aucun identifiant en dur** : `docker-compose.yml` lit toutes ses valeurs depuis `.env`, et refuse de démarrer si une variable manque.
-- `.env.example` est commité avec des valeurs factices ; `.env`, qui contient les vrais secrets, ne l'est jamais.
-- **Deux bases PostgreSQL** : une base de développement (persistante) et une **base de test séparée** (en mémoire, `tmpfs`), pour que les tests ne touchent jamais aux données de développement.
-- Les ports (5433 et 5434) diffèrent de ceux du TP1 pour que les deux projets puissent tourner en même temps.
-- **Aucun état applicatif en mémoire** : même les compteurs de limitation de débit sont stockés en base (table `limite_debit`). Le serveur peut redémarrer ou être dupliqué sans perdre d'information.
-
-------
 
 ## API REST
 
@@ -173,29 +134,7 @@ Les migrations du TP1 ne sont pas reprises : le projet repart d'une migration in
 | GET     | `/questions/{id}`            | si l'annonce est visible                        | 200              |
 | POST    | `/questions/{id}/reponse`    | agent propriétaire de l'annonce ou ADMIN        | 201              |
 
-### Choix de conception
 
-- **Des noms au pluriel, jamais de verbe dans l'URI** : l'action est portée par la méthode HTTP (`DELETE /annonces/42`, et non `/deleteAnnonce?id=42`).
-- **`PATCH` plutôt que `PUT` ou `POST` pour modifier** : `POST` crée une ressource ; `PUT` remplace la ressource entière (un champ oublié serait effacé) ; `PATCH` ne modifie que les champs envoyés.
-- **La publication est une sous-ressource** (`/annonces/{id}/publication`) plutôt qu'un champ modifiable par `PATCH` :
-  - c'est une action métier distincte de l'édition du contenu, avec ses propres règles ;
-  - `PUT` (publier) et `DELETE` (dépublier) sont **idempotents** : publier deux fois revient à publier une fois ;
-  - on ne peut pas publier « par accident » en modifiant un prix.
-- **Les questions sont une sous-ressource de l'annonce** (`/annonces/{id}/questions`) plutôt qu'un champ : une question n'existe pas sans son annonce, elle a sa propre vie (auteur, date, réponse) et n'est chargée que lorsqu'on la demande.
-- **`/questions/{id}/reponse` au singulier** : une question a au plus une réponse (contrainte unique en base) ; une seconde réponse renvoie `409`.
-- **`/me` et `/me/annonces`** désignent l'utilisateur authentifié : son identifiant vient du JWT, jamais de l'URI.
-- **`GET /annonces` ne renvoie que des annonces publiées, quel que soit l'appelant** : la réponse est identique pour tous, donc cachable publiquement. Un agent consulte ses brouillons via `/me/annonces`.
-
-### Pagination et filtres
-
-```
-GET /annonces?page=2&limit=20&ville=le%20havre&type=VENTE&prixMax=250000
-{ "data": [ ... ], "meta": { "page": 2, "limit": 20, "total": 137, "pages": 7 } }
-```
-
-- `page` (défaut 1) et `limit` (défaut 20, **maximum 100**) : une collection n'est jamais renvoyée sans limite.
-- Filtres : `ville` (insensible à la casse), `type` (`VENTE` ou `LOCATION`), `prixMax`.
-- Tous ces paramètres sont validés : une valeur invalide donne `400`, jamais `500`.
 
 ### Codes de statut
 
@@ -236,13 +175,7 @@ Le `code` est stable et fait partie du contrat : `VALIDATION_FAILED`, `BAD_REQUE
 
 Une erreur `500` ne révèle jamais de détail technique au client : elle est journalisée côté serveur.
 
-### Validation et exposition des données
 
-- **Toute entrée est validée par Zod** avant d'atteindre le code : corps, paramètres de requête et paramètres de chemin (`GET /annonces/abc` → `400`).
-- **Pas d'affectation de masse** : les schémas d'entrée ne contiennent que les champs autorisés, et Zod retire les autres. Un client qui envoie `"role": "ADMIN"` à l'inscription obtient un compte **USER** ; un `auteurId` ou un `statutPublication` envoyé à la création d'une annonce est ignoré (l'auteur vient du JWT, l'annonce naît en brouillon).
-- **Liste blanche en sortie** : chaque requête Prisma utilise un `select` explicite, et chaque réponse est filtrée par son schéma Zod. `passwordHash` n'est jamais renvoyé, et une colonne ajoutée plus tard en base ne serait pas exposée automatiquement.
-
-------
 
 ## Contrat OpenAPI
 
@@ -318,12 +251,7 @@ La politique est écrite en **fonctions pures** dans `src/regles/autorisation.ts
 
 La vérification de propriété se fait **dans la requête elle-même** (`deleteMany({ where: { id, ...filtreProprietaire(user) } })`, puis `404` si `count === 0`) : il n'y a pas de lecture puis d'écriture séparées entre lesquelles on pourrait passer.
 
-### Statut professionnel des agents
-
-Un AGENT ne gère des annonces que si son `statutPro` est `VALIDE` : un agent `EN_ATTENTE` ou `REFUSE` reçoit `403`.
-
-Le statut est copié dans le JWT au login, ce qui évite une requête en base à chaque appel. Contrepartie : si un administrateur valide ou refuse un agent, le changement ne prend effet qu'à sa prochaine connexion (au  plus tard une heure après, à l'expiration du jeton).
-
+#
 ### CORS
 
 ```
@@ -503,14 +431,7 @@ Pour se débloquer en développement :
 docker compose exec db psql -U immo -d immoservice -c 'delete from limite_debit;'
 ```
 
-### Aucune fuite de `passwordHash`
 
-Chaque requête Prisma utilise un `select` explicite (liste blanche), en REST comme en GraphQL, et chaque réponse  REST est filtrée par son schéma Zod. Un test parcourt les réponses de  toutes les routes (REST et GraphQL) et vérifie qu'aucune ne contient `passwordHash` ni de haché bcrypt.
-
-### Plafond de pagination
-
-- **REST** : `limit` au-delà de 100 → `400`. Le maximum fait partie du **contrat OpenAPI** (`maximum: 100`) : un client qui le dépasse ne respecte pas le contrat et reçoit une erreur explicite.
-- **GraphQL** : `limit` est ramené à 100 sans erreur, car le type `Int` du schéma ne peut pas exprimer de maximum.
 
 ------
 
@@ -523,7 +444,7 @@ docker compose up -d   # démarre la base de développement ET la base de test (
 npm test               # vérifie les types (tests + SDK) puis lance Vitest
 ```
 
-Résultat attendu : `99 passed`.
+Résultat attendu : `100 passed`.
 
 `npm test` enchaîne deux étapes :
 
@@ -596,8 +517,6 @@ De la même façon, en retirant le filtre de propriété d'**une seule** mutatio
 ```markdown
 ├── docker-compose.yml        # PostgreSQL (dev + test)
 ├── .env.example              # variables d'environnement (valeurs factices)
-├── SECURITY.md               # audit de sécurité (OWASP API Top 10, JWT)
-├── AI.md                     # usage des assistants IA
 ├── openapi.yaml              # contrat OpenAPI 3.1 (exporté depuis le code)
 ├── redocly.yaml              # configuration du linter de spécification
 ├── openapitools.json         # version du générateur de SDK
